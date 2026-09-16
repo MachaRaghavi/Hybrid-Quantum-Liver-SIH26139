@@ -1,0 +1,35 @@
+{
+  "dataset": "UCI ILPD (id=225)",
+  "rows": 583,
+  "features": [
+    "Age",
+    "Gender",
+    "TB",
+    "DB",
+    "Alkphos",
+    "Sgpt",
+    "Sgot",
+    "TP",
+    "ALB",
+    "A/G Ratio"
+  ],
+  "split": "80/20 stratified; random_state=42",
+  "quantum_qubits": 4,
+  "quantum_model": "VQC with ZZFeatureMap + RealAmplitudes + StatevectorSampler + COBYLA",
+  "classical_model": "RBF SVM",
+  "classical_metrics": {
+    "accuracy": 0.7008547008547008,
+    "precision": 0.9,
+    "recall_sensitivity": 0.6506024096385542,
+    "specificity": 0.8235294117647058,
+    "f1": 0.7552447552447552
+  },
+  "quantum_metrics": {
+    "accuracy": 0.5384615384615384,
+    "precision": 0.7164179104477612,
+    "recall_sensitivity": 0.5783132530120482,
+    "specificity": 0.4411764705882353,
+    "f1": 0.64
+  },
+  "note": "Metrics are from this fixed split and are not clinical validation. The app is a screening/research demonstration."
+}
