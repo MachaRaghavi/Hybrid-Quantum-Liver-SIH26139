@@ -1,0 +1,61 @@
+{% extends "base.html" %}{% block content %}
+<div class="card">
+  <span class="tag">ANALYSIS COMPLETE</span>
+  <h1>Hybrid Quantum-ML Risk Result</h1>
+
+  <div class="resultbox {{ 'high' if result.quantum_pred==1 else 'low' }}">
+    <div class="resulttitle">{{ result.quantum_label }}</div>
+    <div class="score">{{ "%.2f"|format(result.quantum_score) }}%</div>
+    <p><b>Quantum model risk score:</b> {{ "%.2f"|format(result.quantum_score) }}%</p>
+    <p class="muted">This percentage is the model's estimated score for the disease class. It is <b>not a clinical probability, diagnosis, or medical risk percentage.</b></p>
+  </div>
+
+  <div class="compare">
+    <div><h3>Quantum VQC</h3><strong>{{ result.quantum_label }}</strong><p>Risk score: {{ "%.2f"|format(result.quantum_score) }}%</p></div>
+    <div><h3>Classical SVM</h3><strong>{{ result.classical_label }}</strong><p>Risk score: {{ "%.2f"|format(result.classical_score) }}%</p></div>
+  </div>
+  <p class="agreement">{% if result.agreement %}✓ Both models gave the same class.{% else %}⚠ The models disagree. Treat the result as uncertain and seek professional interpretation.{% endif %}</p>
+
+  <h2>Your LFT report values used by the model</h2>
+  <table><tr><th>Parameter</th><th>Value entered</th></tr>
+  {% for k,v in row.items() %}<tr><td>{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}</table>
+
+  <h2>What-if: how changing an LFT value can change the model result</h2>
+  <p class="muted">Each scenario changes <b>one value only</b> by ±10% and keeps all other inputs unchanged. The table shows the new quantum score and whether the model class changed. This is a sensitivity experiment, not advice to change a patient's laboratory values.</p>
+
+  {% if transitions %}
+  <div class="next">
+    <h3>⚠ Risk-transition scenarios found</h3>
+    <p>These are the input changes in which the quantum model moved from <b>{{ result.quantum_label }}</b> to <b>Higher model-indicated risk</b>.</p>
+    <ul>{% for s in transitions %}<li><b>{{ s.feature }}</b> {{ s.change }} → {{ "%.2f"|format(s.score) }}% model score</li>{% endfor %}</ul>
+  </div>
+  {% else %}
+  <div class="next"><h3>No class transition in the tested ±10% scenarios</h3><p>None of the individual ±10% simulations changed the quantum model's predicted class. This does not mean that other changes would have the same outcome.</p></div>
+  {% endif %}
+
+  <table>
+    <tr><th>LFT parameter</th><th>Change</th><th>New value</th><th>Quantum result</th><th>Risk score</th><th>Change vs baseline</th></tr>
+    {% for s in scenarios %}
+    <tr class="{{ 'risk-change' if s.transition else '' }}">
+      <td>{{ s.feature }}</td><td>{{ s.change }}</td><td>{{ "%.3f"|format(s.new_value) }}</td>
+      <td>{{ s.label }}{% if s.transition %} ⚠{% endif %}</td>
+      <td><b>{{ "%.2f"|format(s.score) }}%</b></td>
+      <td>{% if s.delta >= 0 %}+{% endif %}{{ "%.2f"|format(s.delta) }} percentage points</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div class="next">
+    <h2>What should you do next?</h2>
+    {% if result.quantum_pred == 1 %}
+    <p>The model indicates a <b>higher liver-disease risk class</b> for the entered data. This does not confirm disease. Review the original laboratory report, including the laboratory's own reference ranges, and discuss the result with a qualified healthcare professional.</p>
+    {% else %}
+    <p>The model indicates a <b>lower liver-disease risk class</b> for the entered data. This does not guarantee that a person is healthy. If the report is abnormal, symptoms are present, or a clinician has advised follow-up, medical advice should still be obtained.</p>
+    {% endif %}
+    <p><b>Do not change medicines, diet, or treatment based on this app alone.</b></p>
+  </div>
+
+  <p class="muted"><b>Research prototype:</b> This system is intended for academic early-risk screening and model comparison. It is not a medical diagnostic device.</p>
+  <a class="button" href="{{ url_for('predict') }}">Analyze another report</a>
+</div>
+{% endblock %}
